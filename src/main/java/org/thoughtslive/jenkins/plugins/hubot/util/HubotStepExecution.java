@@ -60,41 +60,23 @@ public abstract class HubotStepExecution<T> extends StepExecution {
   // same super class.
   @SuppressWarnings("hiding")
   protected <T> ResponseData<T> verifyCommon(final BasicHubotStep step) throws AbortException {
-
     logger = listener.getLogger();
-    String errorMessage = null;
-
-    final String url =
-        Util.fixEmpty(step.getUrl()) == null ? envVars.get("HUBOT_URL") : step.getUrl();
-    room =
-        Util.fixEmpty(step.getRoom()) == null ? envVars.get("HUBOT_DEFAULT_ROOM") : step.getRoom();
-    final String message = step.getMessage();
     final String failOnErrorStr = Util.fixEmpty(envVars.get("HUBOT_FAIL_ON_ERROR"));
-
     if (failOnErrorStr == null) {
       failOnError = step.isFailOnError();
     } else {
       failOnError = Boolean.parseBoolean(failOnErrorStr);
     }
-
-    if (Util.fixEmpty(url) == null) {
-      errorMessage = "Hubot: HUBOT_URL is empty or null.";
+    HubotConfig config = null;
+    try {
+      config = new HubotConfig(envVars, step);
+    } catch (HubotConfigException e) {
+      return buildErrorResponse(e);
     }
+    assert config != null;
+    setHubotService(config.getUrl());
 
-    if (Util.fixEmpty(room) == null) {
-      errorMessage = "Hubot: Room is empty or null.";
-    }
-
-    if (Util.fixEmpty(message) == null) {
-      errorMessage = "Hubot: Message is empty or null.";
-    }
-
-    if (errorMessage != null) {
-      return buildErrorResponse(new RuntimeException(errorMessage));
-    }
-
-    setHubotService(url);
-
+    room = config.getRoom();
     buildUser = prepareBuildUser(run.getCauses());
     buildUrl = envVars.get("BUILD_URL");
 

@@ -83,7 +83,7 @@ public class ApproveStepTest {
     // Execute and assert Test.
     assertThatExceptionOfType(AbortException.class).isThrownBy(() -> {
       stepExecution.start();
-    }).withMessage("Hubot: HUBOT_URL is empty or null.").withStackTraceContaining("AbortException")
+    }).withMessage("Hubot: HUBOT_URL or step parameter equivalent is empty or null.").withStackTraceContaining("AbortException")
         .withNoCause();
   }
 
@@ -96,7 +96,7 @@ public class ApproveStepTest {
     // Execute and assert Test.
     assertThatExceptionOfType(AbortException.class).isThrownBy(() -> {
       stepExecution.start();
-    }).withMessage("Hubot: Room is empty or null.").withStackTraceContaining("AbortException")
+    }).withMessage("Hubot: HUBOT_DEFAULT_ROOM or step parameter equivalent is empty or null.").withStackTraceContaining("AbortException")
         .withNoCause();
   }
 

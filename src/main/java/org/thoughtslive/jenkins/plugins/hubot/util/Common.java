@@ -2,7 +2,10 @@ package org.thoughtslive.jenkins.plugins.hubot.util;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.List;
 
+import hudson.Util;
+import hudson.model.Cause;
 import org.thoughtslive.jenkins.plugins.hubot.api.ResponseData;
 
 import hudson.EnvVars;
@@ -108,5 +111,28 @@ public class Common {
     if (throwable.getCause() != null)
       return getRootCause(throwable.getCause());
     return throwable;
+  }
+
+  /**
+   * Return the current build user.
+   *
+   * @param causes build causes.
+   * @return user name.
+   */
+  public static String prepareBuildUser(List<Cause> causes, EnvVars envVars) {
+    // if this is a PR build from the multibranch plugin then we have the CHANGE_AUTHOR env var set
+    if (Util.fixEmpty(envVars.get("CHANGE_AUTHOR")) != null) {
+      return envVars.get("CHANGE_AUTHOR");
+    }
+    String buildUser = "anonymous";
+    if (causes != null && causes.size() > 0) {
+      if (causes.get(0) instanceof Cause.UserIdCause) {
+        buildUser = ((Cause.UserIdCause) causes.get(0)).getUserName();
+      } else if (causes.get(0) instanceof Cause.UpstreamCause) {
+        List<Cause> upstreamCauses = ((Cause.UpstreamCause) causes.get(0)).getUpstreamCauses();
+        prepareBuildUser(upstreamCauses, envVars);
+      }
+    }
+    return buildUser;
   }
 }
